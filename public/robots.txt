@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://www.choicepdf.com/sitemap.xml
