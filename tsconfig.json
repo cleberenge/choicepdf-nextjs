@@ -27,7 +27,7 @@
     // 🔑 Adição para funcionar com "@/..."
     "baseUrl": ".",
     "paths": {
-      "@/*": ["*"]
+      "@/*": ["./*"]
     }
   },
   "include": [

@@ -1,91 +1,66 @@
 
+// components/conversion/ConversionTool.tsx
 import React, { useState } from "react";
-import useFileUpload from "@/hooks/useFileUpload";
-import useFileConverter from "@/hooks/useFileConverter";
+import { useFileUpload } from "@/hooks/useFileUpload";
+import { useFileConverter } from "@/hooks/useFileConverter";
 
 interface ConversionToolProps {
   conversionType: string;
 }
 
-const ConversionTool: React.FC<ConversionToolProps> = ({ conversionType }) => {
-  const { files, handleFileChange, removeFile } = useFileUpload();
-  const { isConverting, convertFiles } = useFileConverter(conversionType);
+export default function ConversionTool({ conversionType }: ConversionToolProps) {
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const { uploadFiles } = useFileUpload();
+  const { convert, progress, error, isConverting } = useFileConverter(conversionType);
 
-  const [resultLinks, setResultLinks] = useState<string[]>([]);
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const files = Array.from(e.target.files);
+      const uploaded = await uploadFiles(files);
+      setSelectedFiles(files);
+      console.log("Arquivos prontos para conversão:", uploaded);
+    }
+  };
 
   const handleConvert = async () => {
-    if (!files.length) return;
-    const results = await convertFiles(files);
-    setResultLinks(results);
+    if (selectedFiles.length > 0) {
+      await convert(selectedFiles);
+    }
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md text-center">
-      {/* Área de upload */}
-      <div className="border-2 border-dashed border-gray-300 p-6 rounded-lg mb-4">
-        <input
-          type="file"
-          multiple
-          onChange={handleFileChange}
-          className="hidden"
-          id="fileInput"
-        />
-        <label
-          htmlFor="fileInput"
-          className="cursor-pointer text-blue-600 hover:underline"
-        >
-          Clique para selecionar arquivos ou arraste aqui
-        </label>
-      </div>
+    <div className="flex flex-col items-center gap-4 p-6 border rounded-lg shadow bg-white">
+      <h2 className="text-lg font-semibold">
+        Conversão: {conversionType.toUpperCase()}
+      </h2>
 
-      {/* Lista de arquivos */}
-      {files.length > 0 && (
-        <ul className="mb-4 text-left">
-          {files.map((file, index) => (
-            <li key={index} className="flex justify-between items-center">
-              <span>{file.name}</span>
-              <button
-                onClick={() => removeFile(index)}
-                className="text-red-500 hover:underline"
-              >
-                Remover
-              </button>
-            </li>
-          ))}
-        </ul>
+      <input type="file" multiple onChange={handleFileChange} />
+
+      {selectedFiles.length > 0 && (
+        <p className="text-sm text-gray-600">
+          {selectedFiles.length} arquivo(s) selecionado(s)
+        </p>
       )}
 
-      {/* Botão converter */}
       <button
         onClick={handleConvert}
-        disabled={isConverting || !files.length}
-        className="px-4 py-2 bg-blue-600 text-white rounded-lg disabled:bg-gray-400"
+        disabled={isConverting || selectedFiles.length === 0}
+        className="px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50"
       >
-        {isConverting ? "Convertendo..." : "Converter"}
+        {isConverting ? "Convertendo..." : "Iniciar Conversão"}
       </button>
 
-      {/* Resultados */}
-      {resultLinks.length > 0 && (
-        <div className="mt-4">
-          <h3 className="font-semibold mb-2">Arquivos convertidos:</h3>
-          <ul>
-            {resultLinks.map((url, idx) => (
-              <li key={idx}>
-                <a
-                  href={url}
-                  download
-                  className="text-green-600 hover:underline"
-                >
-                  Download {idx + 1}
-                </a>
-              </li>
-            ))}
-          </ul>
+      {progress > 0 && (
+        <div className="w-full bg-gray-200 rounded h-3 overflow-hidden">
+          <div
+            className="h-3 bg-green-500 transition-all"
+            style={{ width: `${progress}%` }}
+          />
         </div>
       )}
+
+      {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
     </div>
   );
-};
-
-export default ConversionTool;
+}
 
