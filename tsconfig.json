@@ -1,3 +1,4 @@
+
 {
   "compilerOptions": {
     "lib": [
@@ -21,7 +22,13 @@
         "name": "next"
       }
     ],
-    "strictNullChecks": true
+    "strictNullChecks": true,
+
+    // 🔑 Adição para funcionar com "@/..."
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["*"]
+    }
   },
   "include": [
     "next-env.d.ts",
@@ -33,3 +40,4 @@
     "node_modules"
   ]
 }
+
