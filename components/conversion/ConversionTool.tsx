@@ -1,91 +1,65 @@
 
+"use client";
+
 import React, { useState } from "react";
 import useFileUpload from "@/hooks/useFileUpload";
 import useFileConverter from "@/hooks/useFileConverter";
+import ConversionIcon from "../ConversionIcon";
 
-interface ConversionToolProps {
-  conversionType: string;
-}
+type ConversionToolProps = {
+  tool: string;
+};
 
-const ConversionTool: React.FC<ConversionToolProps> = ({ conversionType }) => {
-  const { files, handleFileChange, removeFile } = useFileUpload();
-  const { isConverting, convertFiles } = useFileConverter(conversionType);
+export default function ConversionTool({ tool }: ConversionToolProps) {
+  const { uploadFiles } = useFileUpload();
+  const { convert, progress, error, isConverting } = useFileConverter(tool);
 
-  const [resultLinks, setResultLinks] = useState<string[]>([]);
+  const [files, setFiles] = useState<File[]>([]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const selectedFiles = Array.from(e.target.files);
+      setFiles(selectedFiles);
+    }
+  };
 
   const handleConvert = async () => {
-    if (!files.length) return;
-    const results = await convertFiles(files);
-    setResultLinks(results);
+    if (files.length === 0) return;
+    await convert(files);
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md text-center">
-      {/* Área de upload */}
-      <div className="border-2 border-dashed border-gray-300 p-6 rounded-lg mb-4">
-        <input
-          type="file"
-          multiple
-          onChange={handleFileChange}
-          className="hidden"
-          id="fileInput"
-        />
-        <label
-          htmlFor="fileInput"
-          className="cursor-pointer text-blue-600 hover:underline"
-        >
-          Clique para selecionar arquivos ou arraste aqui
-        </label>
-      </div>
+    <div className="flex flex-col items-center gap-4 p-6 border rounded-lg shadow-md bg-white">
+      <ConversionIcon type={tool} />
 
-      {/* Lista de arquivos */}
-      {files.length > 0 && (
-        <ul className="mb-4 text-left">
-          {files.map((file, index) => (
-            <li key={index} className="flex justify-between items-center">
-              <span>{file.name}</span>
-              <button
-                onClick={() => removeFile(index)}
-                className="text-red-500 hover:underline"
-              >
-                Remover
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
+      <h2 className="text-lg font-semibold">Conversor {tool}</h2>
 
-      {/* Botão converter */}
+      <input
+        type="file"
+        multiple
+        onChange={handleFileChange}
+        className="p-2 border rounded w-full"
+      />
+
       <button
         onClick={handleConvert}
-        disabled={isConverting || !files.length}
-        className="px-4 py-2 bg-blue-600 text-white rounded-lg disabled:bg-gray-400"
+        disabled={isConverting || files.length === 0}
+        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
       >
         {isConverting ? "Convertendo..." : "Converter"}
       </button>
 
-      {/* Resultados */}
-      {resultLinks.length > 0 && (
-        <div className="mt-4">
-          <h3 className="font-semibold mb-2">Arquivos convertidos:</h3>
-          <ul>
-            {resultLinks.map((url, idx) => (
-              <li key={idx}>
-                <a
-                  href={url}
-                  download
-                  className="text-green-600 hover:underline"
-                >
-                  Download {idx + 1}
-                </a>
-              </li>
-            ))}
-          </ul>
+      {progress > 0 && (
+        <div className="w-full bg-gray-200 rounded h-3 overflow-hidden">
+          <div
+            className="bg-green-500 h-3 transition-all duration-300"
+            style={{ width: `${progress}%` }}
+          ></div>
         </div>
       )}
+
+      {error && <p className="text-red-500 text-sm">{error}</p>}
     </div>
   );
-};
-
-export default ConversionTool;
+}
 

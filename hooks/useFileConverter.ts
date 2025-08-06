@@ -1,13 +1,14 @@
 
+// hooks/useFileConverter.ts
 import { useState } from "react";
-import { useFileUpload } from "./useFileUpload";
-import { useFFmpegConverter } from "./useFFmpegConverter";
-import { usePdfcpuConverter } from "./usePdfcpuConverter";
-import { useILoveApiConverter } from "./useILoveApiConverter";
-import { useServerSideConverter } from "./useServerSideConverter";
-import { useClientSideConverter } from "./useClientSideConverter";
+import useFileUpload from "./useFileUpload";
+import useFFmpegConverter from "./useFFmpegConverter";
+import usePdfcpuConverter from "./usePdfcpuConverter";
+import useILoveApiConverter from "./useILoveApiConverter";
+import useServerSideConverter from "./useServerSideConverter";
+import useClientSideConverter from "./useClientSideConverter";
 
-export function useFileConverter(conversionType: string) {
+export default function useFileConverter(conversionType: string) {
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [isConverting, setIsConverting] = useState(false);

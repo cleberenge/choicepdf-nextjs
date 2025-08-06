@@ -1,5 +1,6 @@
 
-export function useFileUpload() {
+// hooks/useFileUpload.ts
+export default function useFileUpload() {
   const uploadFiles = async (files: File[]) => {
     // Placeholder de upload (ajuste conforme sua lógica de backend, se houver)
     return files.map((file) => ({
