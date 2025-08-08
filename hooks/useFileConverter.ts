@@ -1,19 +1,16 @@
-
-// hooks/useFileConverter.ts
-import { useState } from "react";
-import useFileUpload from "./useFileUpload";
-import useFFmpegConverter from "./useFFmpegConverter";
-import usePdfcpuConverter from "./usePdfcpuConverter";
-import useILoveApiConverter from "./useILoveApiConverter";
-import useServerSideConverter from "./useServerSideConverter";
-import useClientSideConverter from "./useClientSideConverter";
+'use client';
+import useFFmpegConverter from './useFFmpegConverter';
+import usePdfcpuConverter from './usePdfcpuConverter';
+import useILoveApiConverter from './useILoveApiConverter';
+import useServerSideConverter from './useServerSideConverter';
+import useClientSideConverter from './useClientSideConverter';
+import { useState } from 'react';
 
 export default function useFileConverter(conversionType: string) {
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [isConverting, setIsConverting] = useState(false);
 
-  const { uploadFiles } = useFileUpload();
   const ffmpeg = useFFmpegConverter();
   const pdfcpu = usePdfcpuConverter();
   const iloveapi = useILoveApiConverter();
@@ -26,22 +23,21 @@ export default function useFileConverter(conversionType: string) {
       setError(null);
       setProgress(10);
 
-      // Decide o fluxo com base no tipo de conversão
-      if (conversionType.includes("mp4") || conversionType.includes("mp3")) {
-        await ffmpeg.convert(files, setProgress);
-      } else if (conversionType.includes("pdf")) {
-        await pdfcpu.convert(files, conversionType, setProgress);
-      } else if (conversionType.includes("ilove")) {
-        await iloveapi.convert(files, conversionType, setProgress);
-      } else if (conversionType.includes("server")) {
-        await serverSide.convert(files, conversionType, setProgress);
+      if (conversionType.includes('mp4') || conversionType.includes('mp3')) {
+        const blob = await ffmpeg.convert(files, setProgress);
+        return blob;
+      } else if (conversionType.includes('pdf')) {
+        return await pdfcpu.convert(files, conversionType, setProgress);
+      } else if (conversionType.includes('ilove')) {
+        return await iloveapi.convert(files, conversionType, setProgress);
+      } else if (conversionType.includes('server')) {
+        return await serverSide.convert(files, conversionType, setProgress);
       } else {
-        await clientSide.convert(files, conversionType, setProgress);
+        return await clientSide.convert(files, conversionType, setProgress);
       }
-
-      setProgress(100);
     } catch (err: any) {
-      setError("Falha na conversão: " + err.message);
+      setError(err?.message || String(err));
+      throw err;
     } finally {
       setIsConverting(false);
     }
@@ -49,4 +45,3 @@ export default function useFileConverter(conversionType: string) {
 
   return { convert, progress, error, isConverting };
 }
-
