@@ -1,65 +1,54 @@
+'use client';
+import React, { useState } from 'react';
+import ConversionIcon from './ConversionIcon';
+import useFileUpload from '@/hooks/useFileUpload';
+import useFileConverter from '@/hooks/useFileConverter';
 
-"use client";
+type Props = { type: string };
 
-import React, { useState } from "react";
-import useFileUpload from "@/hooks/useFileUpload";
-import useFileConverter from "@/hooks/useFileConverter";
-import ConversionIcon from "../ConversionIcon";
+export default function ConversionTool({ type }: Props) {
+  const { file, handleFileChange } = useFileUpload();
+  const { convert, progress, error, isConverting } = useFileConverter(type);
+  const [outputUrl, setOutputUrl] = useState<string | null>(null);
 
-type ConversionToolProps = {
-  tool: string;
-};
-
-export default function ConversionTool({ tool }: ConversionToolProps) {
-  const { uploadFiles } = useFileUpload();
-  const { convert, progress, error, isConverting } = useFileConverter(tool);
-
-  const [files, setFiles] = useState<File[]>([]);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const selectedFiles = Array.from(e.target.files);
-      setFiles(selectedFiles);
+  const handleConvert = async () => {
+    if (!file) return;
+    const result = await convert([file]);
+    if (result instanceof Blob) {
+      setOutputUrl(URL.createObjectURL(result));
     }
   };
 
-  const handleConvert = async () => {
-    if (files.length === 0) return;
-    await convert(files);
-  };
-
   return (
-    <div className="flex flex-col items-center gap-4 p-6 border rounded-lg shadow-md bg-white">
-      <ConversionIcon type={tool} />
+    <div className="w-full max-w-xl bg-white p-6 rounded shadow">
+      <div className="flex items-center gap-4 mb-4">
+        <ConversionIcon type={type} />
+        <h2 className="text-xl font-semibold">Conversor: {type}</h2>
+      </div>
 
-      <h2 className="text-lg font-semibold">Conversor {tool}</h2>
-
-      <input
-        type="file"
-        multiple
-        onChange={handleFileChange}
-        className="p-2 border rounded w-full"
-      />
-
-      <button
-        onClick={handleConvert}
-        disabled={isConverting || files.length === 0}
-        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-      >
-        {isConverting ? "Convertendo..." : "Converter"}
-      </button>
+      <input type="file" onChange={handleFileChange} className="mb-4" />
+      <div className="flex gap-2">
+        <button
+          onClick={handleConvert}
+          disabled={isConverting || !file}
+          className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
+        >
+          {isConverting ? 'Convertendo...' : 'Converter'}
+        </button>
+        {outputUrl && (
+          <a href={outputUrl} download className="px-4 py-2 bg-gray-800 text-white rounded">
+            Baixar resultado
+          </a>
+        )}
+      </div>
 
       {progress > 0 && (
-        <div className="w-full bg-gray-200 rounded h-3 overflow-hidden">
-          <div
-            className="bg-green-500 h-3 transition-all duration-300"
-            style={{ width: `${progress}%` }}
-          ></div>
+        <div className="w-full bg-gray-200 rounded h-3 mt-4">
+          <div style={{ width: `${progress}%` }} className="h-3 bg-green-500 transition-all" />
         </div>
       )}
 
-      {error && <p className="text-red-500 text-sm">{error}</p>}
+      {error && <p className="text-red-600 mt-2">{error}</p>}
     </div>
   );
 }
-
