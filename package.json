@@ -1,24 +1,26 @@
 {
   "name": "choicepdf-nextjs",
   "version": "1.0.0",
+  "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "lint": "next lint"
   },
   "dependencies": {
-    "@ffmpeg/ffmpeg": "^0.12.6",
-    "@supabase/supabase-js": "^2.44.4",
-    "file-saver": "^2.0.5",
-    "jszip": "^3.10.1",
     "next": "14.2.0",
-    "next-intl": "^3.15.0",
-    "pdf-lib": "^1.17.1",
     "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react-dom": "18.2.0",
+    "@ffmpeg/ffmpeg": "0.12.6",
+    "lucide-react": "^0.344.0"
   },
   "devDependencies": {
-    "@types/react": "19.1.9",
-    "typescript": "5.9.2"
+    "typescript": "5.4.5",
+    "@types/react": "18.2.21",
+    "@types/node": "20.11.24",
+    "tailwindcss": "3.3.2",
+    "postcss": "8.4.27",
+    "autoprefixer": "10.4.15"
   }
 }
