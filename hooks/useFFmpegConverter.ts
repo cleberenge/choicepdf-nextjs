@@ -1,34 +1,33 @@
-
-// hooks/useFFmpegConverter.ts
-import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg";
+'use client';
+import { createFFmpeg, fetchFile } from '@ffmpeg/ffmpeg';
+import { useRef } from 'react';
 
 export default function useFFmpegConverter() {
-  const ffmpeg = createFFmpeg({ log: true });
+  const ffmpegRef = useRef<any | null>(null);
 
-  const convert = async (files: File[], setProgress: (p: number) => void) => {
-    if (!ffmpeg.isLoaded()) {
-      await ffmpeg.load();
+  const ensure = async () => {
+    if (!ffmpegRef.current) {
+      const ff = createFFmpeg({ log: true });
+      ffmpegRef.current = ff;
+      await ff.load();
     }
+    return ffmpegRef.current;
+  };
 
-    for (const file of files) {
-      ffmpeg.FS("writeFile", file.name, await fetchFile(file));
+  const convert = async (files: File[], setProgress?: (n: number) => void) => {
+    const ff = await ensure();
+    if (setProgress) setProgress(40);
 
-      // Exemplo: converter para MP3
-      const outputName = "output.mp3";
-      await ffmpeg.run("-i", file.name, outputName);
+    const file = files[0];
+    const inputName = file.name;
+    const outputName = 'output.mp4';
 
-      const data = ffmpeg.FS("readFile", outputName);
-
-      // Criar blob para download
-      const url = URL.createObjectURL(
-        new Blob([data.buffer], { type: "audio/mpeg" })
-      );
-
-      console.log("Arquivo convertido:", url);
-      setProgress(100);
-    }
+    ff.FS('writeFile', inputName, await fetchFile(file));
+    await ff.run('-i', inputName, outputName);
+    const data = ff.FS('readFile', outputName);
+    if (setProgress) setProgress(100);
+    return new Blob([data.buffer], { type: 'video/mp4' });
   };
 
   return { convert };
 }
-
