@@ -1,15 +1,14 @@
+'use client';
+import React from 'react';
 
-// hooks/useFileUpload.ts
 export default function useFileUpload() {
-  const uploadFiles = async (files: File[]) => {
-    // Placeholder de upload (ajuste conforme sua lógica de backend, se houver)
-    return files.map((file) => ({
-      name: file.name,
-      size: file.size,
-      type: file.type,
-    }));
+  const [file, setFile] = React.useState<File | null>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setFile(e.target.files[0]);
+    }
   };
 
-  return { uploadFiles };
+  return { file, handleFileChange };
 }
-
